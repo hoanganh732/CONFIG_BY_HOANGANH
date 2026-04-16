@@ -1,9 +1,9 @@
 ```js
-// === hoanganh OPTIMIZED (NO LOGIC CHANGE) ===
+// === YOUTUBE ADS CLEANER (HYBRID FIX FULL) ===
 
 if (!$response.body) $done({});
 
-// chỉ chạy với youtube api
+// chỉ xử lý API YouTube
 if (!$request.url.includes("youtubei")) {
   $done({});
 }
@@ -15,67 +15,59 @@ try {
   $done({});
 }
 
-// ===== FAST DELETE (GIỮ NGUYÊN HÀNH VI) =====
-const adKeys = ["adPlacements", "playerAds", "adSlots", "ads"];
+// ===== 1. XOÁ ADS TOP LEVEL =====
+delete obj.adPlacements;
+delete obj.playerAds;
+delete obj.adSlots;
+delete obj.ads;
 
-// stack thay recursion (NHANH HƠN)
-const stack = [obj];
-
-while (stack.length) {
-  const current = stack.pop();
-
-  if (!current || typeof current !== "object") continue;
-
-  // xoá ads (giữ logic cũ)
-  for (let i = 0; i < adKeys.length; i++) {
-    if (current[adKeys[i]]) delete current[adKeys[i]];
-  }
-
-  // duyệt object (tối ưu)
-  const values = Object.values(current);
-  for (let i = 0; i < values.length; i++) {
-    const v = values[i];
-    if (v && typeof v === "object") {
-      stack.push(v);
-    }
-  }
+// ===== 2. CLEAN PLAYER =====
+if (obj.playerResponse) {
+  delete obj.playerResponse.adPlacements;
+  delete obj.playerResponse.playerAds;
 }
 
-// ===== FILTER LOGIC GIỮ NGUYÊN =====
-function cleanArray(arr) {
+// ===== 3. FILTER CHUẨN (NÂNG CẤP) =====
+function cleanItems(arr) {
   if (!Array.isArray(arr)) return arr;
 
   const res = [];
+
   for (let i = 0; i < arr.length; i++) {
     const item = arr[i];
 
-    // giữ nguyên logic hoanganh (không thay đổi điều kiện)
+    // ===== BLOCK ADS =====
     if (
-      item?.richItemRenderer ||
-      item?.videoRenderer ||
-      item?.compactVideoRenderer ||
-      item?.gridVideoRenderer
-    ) {
-      res.push(item);
-    } else if (
       item?.promotedSparklesWebRenderer ||
       item?.adSlotRenderer ||
       item?.bannerRenderer ||
+      item?.statementBannerRenderer ||
+      item?.richSectionRenderer || // NEW ADS
       item?.compactPromotedVideoRenderer
     ) {
       continue;
-    } else {
-      res.push(item);
     }
+
+    // ===== BLOCK FAKE VIDEO ADS =====
+    if (
+      item?.richItemRenderer?.content?.videoRenderer?.adBadge ||
+      item?.richItemRenderer?.content?.videoRenderer?.thumbnailOverlays?.some(o =>
+        o?.thumbnailOverlayTimeStatusRenderer?.style === "LIVE"
+      )
+    ) {
+      continue;
+    }
+
+    // ===== KEEP VALID =====
+    res.push(item);
   }
 
   return res;
 }
 
-// ===== APPLY hoanganh =====
+// ===== 4. HOME FEED =====
 try {
-  const tabs =
-    obj?.contents?.twoColumnBrowseResultsRenderer?.tabs;
+  const tabs = obj?.contents?.twoColumnBrowseResultsRenderer?.tabs;
 
   if (tabs) {
     for (let i = 0; i < tabs.length; i++) {
@@ -84,13 +76,13 @@ try {
 
       if (contents) {
         tabs[i].tabRenderer.content.richGridRenderer.contents =
-          cleanArray(contents);
+          cleanItems(contents);
       }
     }
   }
 } catch {}
 
-// continuation
+// ===== 5. CONTINUATION =====
 try {
   const actions =
     obj?.onResponseReceivedActions ||
@@ -103,11 +95,31 @@ try {
 
       if (items) {
         actions[i].appendContinuationItemsAction.continuationItems =
-          cleanArray(items);
+          cleanItems(items);
       }
     }
   }
 } catch {}
 
+// ===== 6. SEARCH RESULTS (THÊM) =====
+try {
+  const contents =
+    obj?.contents?.twoColumnSearchResultsRenderer?.primaryContents
+      ?.sectionListRenderer?.contents;
+
+  if (contents) {
+    for (let i = 0; i < contents.length; i++) {
+      const items =
+        contents[i]?.itemSectionRenderer?.contents;
+
+      if (items) {
+        contents[i].itemSectionRenderer.contents =
+          cleanItems(items);
+      }
+    }
+  }
+} catch {}
+
+// ===== DONE =====
 $done({ body: JSON.stringify(obj) });
 ```
