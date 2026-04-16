@@ -1,0 +1,60 @@
+#!name=YouTube Premium 2025 - Nightmarket
+#!desc=Cháº·n quáº£ng cĂ¡o YouTube + Music | Há»— trá»£ PiP, phá»¥ Ä‘á» & phĂ¡t ná»n | YĂªu cáº§u báº­t báº£o vá»‡ QUIC
+#!tag=Cháº·n quáº£ng cĂ¡o, YouTube, Music, PiP
+# đŸ‘¤ Author: @Nightmarket Server 
+# đŸ’¬ Discord: https://discord.gg/juY9tw5AJY  
+# đŸ€ Web Module: https://nightmarket.site/modules
+
+proxy-providers: {}
+proxies: []
+
+proxy-groups:
+  - name: YouTube
+    type: select
+    proxies:
+      - DIRECT
+  - name: NightmarketServer
+    type: select
+    proxies:
+      - DIRECT
+
+http:
+  mitm:
+    - "-redirector*.googlevideo.com"
+    - "*.googlevideo.com"
+    - "www.youtube.com"
+    - "s.youtube.com"
+    - "youtubei.googleapis.com"
+
+  script:
+    - match: ^https?:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch)
+      name: NightmarketServer
+      type: response
+      require-body: true
+      binary-mode: true
+      timeout: 10
+
+  rewrite:
+    - '(^https?:\/\/[\w-]+\.googlevideo\.com\/(?!dclk_video_ads).+?)&ctier=L(&.+?),ctier,(.+) $1$2$3 302'
+    - '^https?:\/\/[\w-]+\.googlevideo\.com\/(?!(dclk_video_ads|videoplayback\?)).+&oad - reject-200'
+    - '^https?:\/\/(www|s)\.youtube\.com\/api\/stats\/ads - reject-200'
+    - '^https?:\/\/(www|s)\.youtube\.com\/(pagead|ptracking) - reject-200'
+    - '^https?:\/\/s\.youtube\.com\/api\/stats\/qoe\?adcontext - reject-200'
+
+script-providers:
+  YouTubequguanggao1:
+    url: https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Youtube/youtube.response.js
+    interval: 86400
+
+rules:
+  - GEOSITE,youtube,YouTube
+  - MATCH,NightmarketServer
+
+dns:
+  default-nameserver:
+    - 114.114.114.114
+    - 1.1.1.1
+  skip-cert-verify: true
+
+log-level: info
+mode: rule
