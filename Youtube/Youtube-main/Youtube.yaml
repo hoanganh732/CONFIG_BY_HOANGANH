@@ -43,7 +43,7 @@ http:
 
 script-providers:
   YouTubequguanggao1:
-    url: https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Youtube/youtube.response.js
+    url: https://raw.githubusercontent.com/hoanganh732/CONFIG_BY_HOANGANH/refs/heads/main/Youtube/Youtube-main/Youtube.response.js
     interval: 86400
 
 rules:
