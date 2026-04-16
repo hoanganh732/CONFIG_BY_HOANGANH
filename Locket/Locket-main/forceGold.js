@@ -21,15 +21,15 @@ if (body) {
       "expires_date": "2099-12-31T23:59:59Z",
       "grace_period_expires_date": null,
       "unsubscribe_detected_at": null,
-      "original_purchase_date": "2025-09-02T00:00:00Z", // ngày fake tham gia
-      "purchase_date": "2025-09-02T00:00:00Z",
+      "original_purchase_date": "2002-04-02T00:00:00Z", // ngày fake tham gia
+      "purchase_date": "2002-04-02T00:00:00Z",
       "store": "app_store"
     };
 
     // Fake entitlement Gold
     obj.subscriber.entitlements["Gold"] = {
       "grace_period_expires_date": null,
-      "purchase_date": "2025-09-02T00:00:00Z",
+      "purchase_date": "2002-04-02T00:00:00Z",
       "product_identifier": "locket.premium",
       "expires_date": "2099-12-31T23:59:59Z"
     };
